@@ -24,28 +24,83 @@ struct Crosshair {
     size: f32,
 }
 
-fn main() {
-    let mut crosshair = Crosshair {
-        ..Default::default()
-    };
-    const DICTIONARY: &str = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefhijkmnopqrstuvwxyz23456789";
-    let crosshair_code = "CSGO-yxFVd-8AmDF-xw85f-8t55O-ey3JE";
-    let crosshair_data = crosshair_code
+#[inline]
+fn parse_crosshair(crosshair_code: &str) -> Vec<char> {
+    crosshair_code
         .replace("CSGO-", "")
         .replace('-', "")
         .chars()
         .rev()
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+}
 
+#[inline]
+fn decode(crosshair_data: &Vec<char>) -> Vec<u8> {
     let mut big = BigInt::new(Plus, Vec::new());
+    const DICTIONARY: &str = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefhijkmnopqrstuvwxyz23456789";
 
-    for (_i, &c) in crosshair_data.iter().enumerate() {
+    for &c in crosshair_data {
         if let Some(index) = DICTIONARY.chars().position(|x| x == c) {
-            big = big * (DICTIONARY.len() as u32) as i32 + index as i32;
+            big = big * (DICTIONARY.len() as i32) + index as i32;
         }
     }
 
-    let crosshair_data = big.to_bytes_be().1;
+    big.to_bytes_be().1
+}
+
+#[inline]
+fn get_commands(crosshair: &Crosshair) {
+    println!(
+        "cl_crosshair_drawoutline {}
+        cl_crosshair_dynamic_maxdist_splitratio {}
+        cl_crosshair_dynamic_splitalpha_innermod {}
+        cl_crosshair_dynamic_splitalpha_outermod {}
+        cl_crosshair_dynamic_splitdist {}
+        cl_crosshair_outlinethickness {}
+        cl_crosshair_t {}
+        cl_crosshairalpha {}
+        cl_crosshaircolor {}
+        cl_crosshaircolor_b {}
+        cl_crosshaircolor_g {}
+        cl_crosshaircolor_r {}
+        cl_crosshairdot {}
+        cl_crosshairgap {}
+        cl_crosshairgap_useweaponvalue {}
+        cl_crosshairsize {}
+        cl_crosshairstyle {}
+        cl_crosshairthickness {}
+        cl_crosshairusealpha {}
+        cl_fixedcrosshairgap {}",
+        crosshair.outline_enabled,
+        crosshair.split_size,
+        crosshair.inner_alpha,
+        crosshair.outer_alpha,
+        crosshair.split_distance,
+        crosshair.outline,
+        crosshair.t_style,
+        crosshair.alpha,
+        crosshair.color,
+        crosshair.b,
+        crosshair.g,
+        crosshair.r,
+        crosshair.dot,
+        crosshair.gap,
+        crosshair.weapon_gap,
+        crosshair.size,
+        crosshair.style,
+        crosshair.thickness,
+        crosshair.alpha_enabled,
+        crosshair.fixed_gap
+    );
+}
+
+fn main() {
+    let mut crosshair = Crosshair {
+        ..Default::default()
+    };
+
+    let data = parse_crosshair("CSGO-oSFCu-xZZM8-xpB4T-464ce-mRFuA");
+    let crosshair_data = decode(&data);
 
     crosshair.gap = crosshair_data[2] as i8 / 10;
     crosshair.outline_enabled = crosshair_data[10] & 8 == 8;
@@ -69,48 +124,4 @@ fn main() {
     crosshair.split_size = (crosshair_data[11] >> 4) as f32 / 10.0;
 
     get_commands(&crosshair);
-}
-
-fn get_commands(crosshair: &Crosshair) {
-    println!("cl_crosshair_drawoutline {}
-cl_crosshair_dynamic_maxdist_splitratio {}
-cl_crosshair_dynamic_splitalpha_innermod {}
-cl_crosshair_dynamic_splitalpha_outermod {}
-cl_crosshair_dynamic_splitdist {}
-cl_crosshair_outlinethickness {}
-cl_crosshair_t {}
-cl_crosshairalpha {}
-cl_crosshaircolor {}
-cl_crosshaircolor_b {}
-cl_crosshaircolor_g {}
-cl_crosshaircolor_r {}
-cl_crosshairdot {}
-cl_crosshairgap {}
-cl_crosshairgap_useweaponvalue {}
-cl_crosshairsize {}
-cl_crosshairstyle {}
-cl_crosshairthickness {}
-cl_crosshairusealpha {}
-cl_fixedcrosshairgap {}",
-        crosshair.outline_enabled,
-        crosshair.split_size,
-        crosshair.inner_alpha,
-        crosshair.outer_alpha,
-        crosshair.split_distance,
-        crosshair.outline,
-        crosshair.t_style,
-        crosshair.alpha,
-        crosshair.color,
-        crosshair.b,
-        crosshair.g,
-        crosshair.r,
-        crosshair.dot,
-        crosshair.gap,
-        crosshair.weapon_gap,
-        crosshair.size,
-        crosshair.style,
-        crosshair.thickness,
-        crosshair.alpha_enabled,
-        crosshair.fixed_gap
-    );
 }
