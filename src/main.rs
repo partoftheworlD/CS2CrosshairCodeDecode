@@ -41,7 +41,7 @@ fn main() {
 
     for (_i, &c) in crosshair_data.iter().enumerate() {
         if let Some(index) = DICTIONARY.chars().position(|x| x == c) {
-            big = big * (DICTIONARY.len() as u32) as i32 + index as i32;
+            big = big * (DICTIONARY.len() as i32) + index as i32;
         }
     }
 
@@ -51,10 +51,10 @@ fn main() {
     crosshair.outline_enabled = crosshair_data[10] & 8 == 8;
     crosshair.thickness = crosshair_data[12] as f32 / 10.0;
     crosshair.size = crosshair_data[14] as f32 / 10.0;
-    crosshair.r = crosshair_data[4];
-    crosshair.g = crosshair_data[5];
-    crosshair.b = crosshair_data[6];
-    crosshair.alpha = crosshair_data[7];
+    crosshair.r = crosshair_data[4] & 0xff;
+    crosshair.g = crosshair_data[5] & 0xff;
+    crosshair.b = crosshair_data[6] & 0xff;
+    crosshair.alpha = crosshair_data[7] & 0xff;
     crosshair.dot = (crosshair_data[13] >> 4) & 1 == 1;
     crosshair.color = crosshair_data[10] & 7;
     crosshair.weapon_gap = (crosshair_data[13] >> 4) & 2 == 2;
